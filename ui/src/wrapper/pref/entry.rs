@@ -1,9 +1,8 @@
 use std::cell::RefCell;
 
+use adw::subclass::prelude::*;
 use gtk::glib;
 use gtk::subclass::prelude::*;
-use adw::subclass::prelude::*;
-use adw::prelude::*;
 
 #[derive(gtk::CompositeTemplate, glib::Properties, Default)]
 #[properties(wrapper_type = super::PrefEntry)]
@@ -21,8 +20,6 @@ pub struct PrefEntry {
     icon_name: RefCell<String>,
 
     #[template_child]
-    pub entry: TemplateChild<gtk::Entry>,
-    #[template_child]
     pub btn: TemplateChild<gtk::Button>,
 }
 
@@ -30,7 +27,7 @@ pub struct PrefEntry {
 impl ObjectSubclass for PrefEntry {
     const NAME: &'static str = "LSPrefEntry";
     type Type = super::PrefEntry;
-    type ParentType = adw::PreferencesRow;
+    type ParentType = adw::EntryRow;
 
     fn class_init(klass: &mut Self::Class) {
         klass.bind_template();

@@ -1,6 +1,6 @@
-use gtk::glib;
-use gtk;
 use adw;
+use gtk;
+use gtk::glib;
 
 pub mod dropdown;
 pub mod entry;
@@ -11,7 +11,7 @@ pub mod switch;
 glib::wrapper! {
     pub struct PrefDropdown(ObjectSubclass<dropdown::PrefDropdown>)
         @extends
-            adw::PreferencesRow, gtk::ListBoxRow, gtk::Widget,
+            adw::ComboRow, adw::ActionRow, adw::PreferencesRow, gtk::ListBoxRow, gtk::Widget,
         @implements
             gtk::Accessible, gtk::Actionable, gtk::Buildable, gtk::ConstraintTarget;
 }
@@ -19,7 +19,7 @@ glib::wrapper! {
 glib::wrapper! {
     pub struct PrefSwitch(ObjectSubclass<switch::PrefSwitch>)
         @extends
-            adw::PreferencesRow, gtk::ListBoxRow, gtk::Widget,
+            adw::SwitchRow, adw::ActionRow, adw::PreferencesRow, gtk::ListBoxRow, gtk::Widget,
         @implements
             gtk::Accessible, gtk::Actionable, gtk::Buildable, gtk::ConstraintTarget;
 }
@@ -27,15 +27,15 @@ glib::wrapper! {
 glib::wrapper! {
     pub struct PrefNumber(ObjectSubclass<number::PrefNumber>)
         @extends
-            adw::PreferencesRow, gtk::ListBoxRow, gtk::Widget,
+            adw::SpinRow, adw::ActionRow, adw::PreferencesRow, gtk::ListBoxRow, gtk::Widget,
         @implements
-            gtk::Accessible, gtk::Actionable, gtk::Buildable, gtk::ConstraintTarget;
+            gtk::Accessible, gtk::Actionable, gtk::Buildable, gtk::ConstraintTarget, gtk::Editable;
 }
 
 glib::wrapper! {
     pub struct PrefSlider(ObjectSubclass<slider::PrefSlider>)
         @extends
-            adw::PreferencesRow, gtk::ListBoxRow, gtk::Widget,
+            adw::ActionRow, adw::PreferencesRow, gtk::ListBoxRow, gtk::Widget,
         @implements
             gtk::Accessible, gtk::Actionable, gtk::Buildable, gtk::ConstraintTarget;
 }
@@ -43,9 +43,9 @@ glib::wrapper! {
 glib::wrapper! {
     pub struct PrefEntry(ObjectSubclass<entry::PrefEntry>)
         @extends
-            adw::PreferencesRow, gtk::ListBoxRow, gtk::Widget,
+            adw::EntryRow, adw::PreferencesRow, gtk::ListBoxRow, gtk::Widget,
         @implements
-            gtk::Accessible, gtk::Actionable, gtk::Buildable, gtk::ConstraintTarget;
+            gtk::Accessible, gtk::Actionable, gtk::Buildable, gtk::ConstraintTarget, gtk::Editable;
 }
 
 impl PrefDropdown {
@@ -75,5 +75,11 @@ impl PrefSlider {
 impl PrefEntry {
     pub fn new() -> Self {
         glib::Object::new()
+    }
+}
+
+impl PrefEntry {
+    pub fn browse_button(&self) -> gtk::Button {
+        self.imp().btn.get()
     }
 }

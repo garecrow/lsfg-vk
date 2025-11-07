@@ -1,9 +1,8 @@
 use std::cell::RefCell;
 
+use adw::subclass::prelude::*;
 use gtk::glib;
 use gtk::subclass::prelude::*;
-use adw::subclass::prelude::*;
-use adw::prelude::*;
 
 #[derive(gtk::CompositeTemplate, glib::Properties, Default)]
 #[properties(wrapper_type = super::PrefNumber)]
@@ -13,16 +12,13 @@ pub struct PrefNumber {
     opt_name: RefCell<String>,
     #[property(get, set)]
     opt_subtitle: RefCell<String>,
-
-    #[template_child]
-    pub number: TemplateChild<gtk::SpinButton>,
 }
 
 #[glib::object_subclass]
 impl ObjectSubclass for PrefNumber {
     const NAME: &'static str = "LSPrefNumber";
     type Type = super::PrefNumber;
-    type ParentType = adw::PreferencesRow;
+    type ParentType = adw::SpinRow;
 
     fn class_init(klass: &mut Self::Class) {
         klass.bind_template();

@@ -1,15 +1,24 @@
-use adw::subclass::prelude::ObjectSubclassIsExt;
-use gtk::{gio::{self, prelude::FileExt}, glib::object::CastNone, prelude::{ButtonExt, EditableExt, GtkWindowExt, ListBoxRowExt, RangeExt, WidgetExt}};
+use adw::{
+    prelude::{ComboRowExt, EntryRowExt, SpinRowExt, SwitchRowExt},
+    subclass::prelude::ObjectSubclassIsExt,
+};
+use gtk::{
+    gio::{self, prelude::FileExt},
+    glib::object::CastNone,
+    prelude::{ButtonExt, EditableExt, GtkWindowExt, ListBoxRowExt, RangeExt, WidgetExt},
+};
 
-use crate::{config, utils, wrapper::{entry, pane, popup}, STATE};
+use crate::{
+    config, utils,
+    wrapper::{entry, pane, popup},
+    STATE,
+};
 
 // update the currently selected game configuration
 fn update_game<F: FnOnce(&mut config::TomlGame)>(update: F) {
     if let Ok(state) = STATE.get().unwrap().try_read() {
         if let Some(selected_game) = state.selected_game {
-            let _ = config::edit_config(|config| {
-                update(&mut config.game[selected_game])
-            });
+            let _ = config::edit_config(|config| update(&mut config.game[selected_game]));
         }
     }
 }
@@ -19,23 +28,26 @@ fn update_game<F: FnOnce(&mut config::TomlGame)>(update: F) {
 ///
 pub fn register_signals(sidebar_: pane::PaneSidebar, main: &pane::PaneMain) {
     let main = main.imp();
-    let exe = main.profile_name.imp();
-    let multiplier = main.multiplier.imp();
+    let exe_row = main.profile_name.imp().obj();
+    let multiplier_row = main.multiplier.imp().obj();
     let flow_scale = main.flow_scale.imp();
-    let performance_mode = main.performance_mode.imp();
-    let hdr_mode = main.hdr_mode.imp();
-    let experimental_present_mode = main.experimental_present_mode.imp();
+    let performance_row = main.performance_mode.imp().obj();
+    let hdr_row = main.hdr_mode.imp().obj();
+    let experimental_row = main.experimental_present_mode.imp().obj();
 
     // preset opts
     let sidebar = sidebar_.clone();
-    exe.entry.connect_changed(move |entry| {
+    exe_row.connect_changed(move |entry| {
         let mut exe = entry.text().to_string();
         if exe.trim().is_empty() {
             exe = "new preset".to_string();
         }
 
         // rename list entry
-        let row_option = sidebar.imp().profiles.selected_row()
+        let row_option = sidebar
+            .imp()
+            .profiles
+            .selected_row()
             .and_downcast::<entry::Entry>();
 
         if let Some(row) = row_option {
@@ -47,9 +59,9 @@ pub fn register_signals(sidebar_: pane::PaneSidebar, main: &pane::PaneMain) {
             conf.exe = exe;
         });
     });
-    multiplier.number.connect_value_changed(|dropdown| {
+    multiplier_row.connect_value_notify(|row| {
         update_game(|conf| {
-            conf.multiplier = (dropdown.value() as i64).into();
+            conf.multiplier = (row.value() as i64).into();
         })
     });
     flow_scale.slider.connect_value_changed(|slider| {
@@ -57,17 +69,17 @@ pub fn register_signals(sidebar_: pane::PaneSidebar, main: &pane::PaneMain) {
             conf.flow_scale = (slider.value() / 100.0).into();
         });
     });
-    performance_mode.switch.connect_state_notify(|switch| {
+    performance_row.connect_active_notify(|row| {
         update_game(|conf| {
-            conf.performance_mode = switch.state();
+            conf.performance_mode = row.is_active();
         });
     });
-    hdr_mode.switch.connect_state_notify(|switch| {
+    hdr_row.connect_active_notify(|row| {
         update_game(|conf| {
-            conf.hdr_mode = switch.state();
+            conf.hdr_mode = row.is_active();
         });
     });
-    experimental_present_mode.dropdown.connect_selected_notify(|dropdown| {
+    experimental_row.connect_selected_notify(|dropdown| {
         update_game(|conf| {
             conf.experimental_present_mode = match dropdown.selected() {
                 0 => config::PresentMode::Vsync,
@@ -79,8 +91,8 @@ pub fn register_signals(sidebar_: pane::PaneSidebar, main: &pane::PaneMain) {
     });
 
     // global opts
-    let dll = main.dll.imp();
-    dll.entry.connect_changed(|entry| {
+    let dll_row = main.dll.imp().obj();
+    dll_row.connect_changed(|entry| {
         let _ = config::edit_config(|config| {
             let mut text = entry.text().to_string();
             if text.trim().is_empty() {
@@ -94,16 +106,16 @@ pub fn register_signals(sidebar_: pane::PaneSidebar, main: &pane::PaneMain) {
             }
         });
     });
-    let no_fp16 = main.no_fp16.imp();
-    no_fp16.switch.connect_state_notify(|switch| {
+    let no_fp16_row = main.no_fp16.imp().obj();
+    no_fp16_row.connect_active_notify(|row| {
         let _ = config::edit_config(|config| {
-            config.global.no_fp16 = switch.state();
+            config.global.no_fp16 = row.is_active();
         });
     });
 
     // utility buttons
-    let entry = dll.entry.clone();
-    dll.btn.connect_clicked(move |btn| {
+    let entry_row = dll_row.clone();
+    dll_row.browse_button().connect_clicked(move |btn| {
         let dialog = gtk::FileDialog::new();
         dialog.set_title("Select Lossless.dll");
 
@@ -116,10 +128,8 @@ pub fn register_signals(sidebar_: pane::PaneSidebar, main: &pane::PaneMain) {
         dialog.set_filters(Some(&filters));
         dialog.set_default_filter(Some(&filter));
 
-        let window = btn.root()
-            .and_downcast::<gtk::Window>()
-            .unwrap();
-        let entry = entry.clone();
+        let window = btn.root().and_downcast::<gtk::Window>().unwrap();
+        let entry = entry_row.clone();
         dialog.open(Some(&window), gio::Cancellable::NONE, move |result| {
             if result.is_err() || result.as_ref().unwrap().path().is_none() {
                 return;
@@ -135,9 +145,10 @@ pub fn register_signals(sidebar_: pane::PaneSidebar, main: &pane::PaneMain) {
         });
     });
 
-    let entry = exe.entry.clone();
-    exe.btn.connect_clicked(move |btn| {
-        let window = btn.root()
+    let entry_row = exe_row.clone();
+    exe_row.browse_button().connect_clicked(move |btn| {
+        let window = btn
+            .root()
             .and_downcast::<gtk::ApplicationWindow>()
             .unwrap()
             .application()
@@ -153,7 +164,7 @@ pub fn register_signals(sidebar_: pane::PaneSidebar, main: &pane::PaneMain) {
             list.append(&entry);
         }
 
-        let entry = entry.clone();
+        let entry = entry_row.clone();
         let picker_ = picker.clone();
         picker.imp().processes.connect_row_activated(move |_, row| {
             let comm_str = processes[row.index() as usize].1.clone();

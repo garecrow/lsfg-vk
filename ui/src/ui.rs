@@ -1,5 +1,6 @@
+use adw::prelude::*;
 use adw::{self, subclass::prelude::ObjectSubclassIsExt};
-use gtk::prelude::{WidgetExt, EditableExt, GtkWindowExt};
+use gtk::prelude::{EditableExt, GtkWindowExt, WidgetExt};
 
 use crate::config;
 use crate::wrapper;
@@ -23,9 +24,9 @@ pub fn build(app: &adw::Application) {
     }
 
     if let Some(dll_path) = config.global.dll {
-        imp.main.imp().dll.imp().entry.set_text(&dll_path);
+        imp.main.imp().dll.set_text(&dll_path);
     }
-    imp.main.imp().no_fp16.imp().switch.set_active(config.global.no_fp16);
+    imp.main.imp().no_fp16.set_active(config.global.no_fp16);
 
     // register handlers on sidebar pane.
     sidebar_handler::register_signals(&imp.sidebar, imp.main.clone());

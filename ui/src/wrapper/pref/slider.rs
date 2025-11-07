@@ -1,9 +1,8 @@
 use std::cell::RefCell;
 
+use adw::subclass::prelude::*;
 use gtk::glib;
 use gtk::subclass::prelude::*;
-use adw::subclass::prelude::*;
-use adw::prelude::*;
 
 #[derive(gtk::CompositeTemplate, glib::Properties, Default)]
 #[properties(wrapper_type = super::PrefSlider)]
@@ -22,7 +21,7 @@ pub struct PrefSlider {
 impl ObjectSubclass for PrefSlider {
     const NAME: &'static str = "LSPrefSlider";
     type Type = super::PrefSlider;
-    type ParentType = adw::PreferencesRow;
+    type ParentType = adw::ActionRow;
 
     fn class_init(klass: &mut Self::Class) {
         klass.bind_template();

@@ -1,9 +1,8 @@
 use std::cell::RefCell;
 
+use adw::subclass::prelude::*;
 use gtk::glib;
 use gtk::subclass::prelude::*;
-use adw::subclass::prelude::*;
-use adw::prelude::*;
 
 #[derive(gtk::CompositeTemplate, glib::Properties, Default)]
 #[properties(wrapper_type = super::PrefDropdown)]
@@ -17,16 +16,13 @@ pub struct PrefDropdown {
     default_selection: RefCell<u32>,
     #[property(get, set)]
     options: RefCell<gtk::StringList>,
-
-    #[template_child]
-    pub dropdown: TemplateChild<gtk::DropDown>,
 }
 
 #[glib::object_subclass]
 impl ObjectSubclass for PrefDropdown {
     const NAME: &'static str = "LSPrefDropdown";
     type Type = super::PrefDropdown;
-    type ParentType = adw::PreferencesRow;
+    type ParentType = adw::ComboRow;
 
     fn class_init(klass: &mut Self::Class) {
         klass.bind_template();
