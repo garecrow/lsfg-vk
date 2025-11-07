@@ -1,7 +1,13 @@
+use adw::prelude::{ComboRowExt, SpinRowExt, SwitchRowExt};
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gtk::prelude::{ButtonExt, EditableExt, ListBoxRowExt, RangeExt, WidgetExt};
 
-use crate::{config, ui::entry_handler, wrapper::{pane, entry}, STATE};
+use crate::{
+    config,
+    ui::entry_handler,
+    wrapper::{entry, pane},
+    STATE,
+};
 
 ///
 /// Register signals for adding and selecting presets.
@@ -9,38 +15,43 @@ use crate::{config, ui::entry_handler, wrapper::{pane, entry}, STATE};
 pub fn register_signals(sidebar_: &pane::PaneSidebar, main: pane::PaneMain) {
     // activate signal
     let state = STATE.get().unwrap().clone();
-    sidebar_.imp().profiles.connect_row_activated(move |_, entry| {
-        // find config entry by index
-        let index = entry.index() as usize;
-        let config = config::get_config();
-        if config.is_err() {
-            return;
-        }
-        let config = config.unwrap();
-        let conf = config.game[index].clone();
+    sidebar_
+        .imp()
+        .profiles
+        .connect_row_activated(move |_, entry| {
+            // find config entry by index
+            let index = entry.index() as usize;
+            let config = config::get_config();
+            if config.is_err() {
+                return;
+            }
+            let config = config.unwrap();
+            let conf = config.game[index].clone();
 
-        // update main pane
-        let main = main.imp();
-        let exe = main.profile_name.imp();
-        let multiplier = main.multiplier.imp();
-        let flow_scale = main.flow_scale.imp();
-        let performance_mode = main.performance_mode.imp();
-        let hdr_mode = main.hdr_mode.imp();
-        let experimental_present_mode = main.experimental_present_mode.imp();
+            // update main pane
+            let main = main.imp();
+            let exe = main.profile_name.clone();
+            let multiplier = main.multiplier.clone();
+            let flow_scale = main.flow_scale.imp();
+            let performance_mode = main.performance_mode.clone();
+            let hdr_mode = main.hdr_mode.clone();
+            let experimental_present_mode = main.experimental_present_mode.clone();
 
-        // (lock state early, so the ui update doesn't override the config)
-        if let Ok(mut state) = state.write() {
-            exe.entry.set_text(&conf.exe);
-            multiplier.number.set_value(conf.multiplier.into());
-            flow_scale.slider.set_value(Into::<f64>::into(conf.flow_scale) * 100.0);
-            performance_mode.switch.set_active(conf.performance_mode);
-            hdr_mode.switch.set_active(conf.hdr_mode);
-            experimental_present_mode.dropdown.set_selected(conf.experimental_present_mode.into());
+            // (lock state early, so the ui update doesn't override the config)
+            if let Ok(mut state) = state.write() {
+                exe.set_text(&conf.exe);
+                multiplier.set_value(conf.multiplier.into());
+                flow_scale
+                    .slider
+                    .set_value(Into::<f64>::into(conf.flow_scale) * 100.0);
+                performance_mode.set_active(conf.performance_mode);
+                hdr_mode.set_active(conf.hdr_mode);
+                experimental_present_mode.set_selected(conf.experimental_present_mode.into());
 
-            // update state
-            state.selected_game = Some(index);
-        }
-    });
+                // update state
+                state.selected_game = Some(index);
+            }
+        });
 
     // create signal
     let sidebar = sidebar_.clone();

@@ -1,9 +1,8 @@
 use std::cell::RefCell;
 
+use adw::subclass::prelude::*;
 use gtk::glib;
 use gtk::subclass::prelude::*;
-use adw::subclass::prelude::*;
-use adw::prelude::*;
 
 #[derive(gtk::CompositeTemplate, glib::Properties, Default)]
 #[properties(wrapper_type = super::PrefSwitch)]
@@ -15,16 +14,13 @@ pub struct PrefSwitch {
     opt_subtitle: RefCell<String>,
     #[property(get, set)]
     default_state: RefCell<bool>,
-
-    #[template_child]
-    pub switch: TemplateChild<gtk::Switch>,
 }
 
 #[glib::object_subclass]
 impl ObjectSubclass for PrefSwitch {
     const NAME: &'static str = "LSPrefSwitch";
     type Type = super::PrefSwitch;
-    type ParentType = adw::PreferencesRow;
+    type ParentType = adw::SwitchRow;
 
     fn class_init(klass: &mut Self::Class) {
         klass.bind_template();
